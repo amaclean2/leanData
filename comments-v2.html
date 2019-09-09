@@ -1,0 +1,280 @@
+<!--
+  Front-End Interview / Existing Reddit Exercise - Working With Legacy Code
+
+  Please read these instructions carefully!
+
+  Complete each "TODO" item below. You should fully implement these items in the order listed before moving on to the next item.
+
+  Feature Implementation
+  TODO: implement up/down vote functionality
+  TODO: alternate comment level colors: #ffffff/#f0f0f0 without storing state
+
+  Refactoring & Documentation
+  TODO: refactor so that no function contains more than 15 lines
+  TODO: refactor so that the "Post" class is a subclass of "Comment" and create a new class "App" that handles attaching the Post to the document DOM.
+        If you are unfamiliar with sub classes, you may refer to online resources such as:
+        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Sub_classing_with_extends
+  TODO: document each class and function
+
+  If there is extra time, you may work on cleaning up code, debugging any edge cases you may find, or styling
+-->
+<html>
+  <head>
+    <style>
+      .reply-link {
+        color: #1360e9;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      .comment {
+        border: 1px solid gainsboro;
+        margin: 15px 5px 5px 20px;
+        padding: 10px 5px 10px 10px;
+      }
+
+      .reply-box {
+        margin: 10px 0px;
+        padding: 5px;
+        width: 100%;
+        display: block;
+      }
+
+      button {
+        margin-right: 10px;
+      }
+    </style>
+    <script>
+        class Post {
+          constructor () {
+            this.post = new Comment({guid: 0, content: 'We did it, Reddit!', post: this})
+            this.comments = [this.post]
+          }
+
+          render () {
+            const renderablePost = this.post.render()
+            renderablePost.style.backgroundColor = "#FFFFFF"
+            document.getElementById('post').appendChild(renderablePost)
+          }
+
+          registerComment (content) {
+            const newComment = new Comment({
+              guid: this.comments.length,
+              content: content + ' (' + this.comments.length + ')',
+              post: this
+            });
+            this.comments.push(newComment);
+            return newComment;
+          }
+        }
+
+        class Comment {
+
+          /**
+           * Simply get props and create the Comment.
+           */
+          constructor (props) {
+            this.guid = props.guid;
+            this.children = [];
+            this.content = props.content;
+            this.post = props.post;
+            this.voteCount = 0;
+          }
+
+          /**
+           * Create the entire DOM element for the comment.
+           */
+
+          buildContainer() {
+            // container
+            const container = document.createElement('div');
+            container.setAttribute('class', 'comment');
+            container.setAttribute('id', 'comment-id-' + this.guid);
+            container.setAttribute('data-comment-id', this.guid);
+
+            const
+              content = this.buildContent(),
+              controls = this.buildControls(),
+              replyContainer = this.buildReplyContainer(container),
+              thread = this.buildThread()
+
+            container.appendChild(content)
+            container.appendChild(controls)
+            container.appendChild(replyContainer)
+            container.appendChild(thread)
+
+            return container
+          }
+
+          buildContent() {
+            // content
+            const content = document.createElement('div');
+            content.setAttribute('class', 'content');
+            content.innerText = this.content;
+
+            return content
+          }
+
+          buildControls() {
+            // controls
+            const 
+              controls = document.createElement('div'),
+              replyLink = this.buildReplyLink(),
+              votes = this.buildVoteFunctionality()
+
+            controls.appendChild(replyLink);
+            controls.appendChild(votes)
+
+            return controls
+          }
+
+          buildReplyLink() {
+            const replyLink = document.createElement('a')
+
+            replyLink.setAttribute('class', 'reply-link');
+            replyLink.addEventListener('click', (event) => {
+              const comment = event.target.closest('.comment');
+              comment.querySelector('.reply-container').style.display = 'block';
+              comment.querySelector('.reply-container > textarea').focus();
+            });
+
+            replyLink.innerText = 'reply';
+
+            return replyLink
+          }
+
+          buildVote(direction, countBox) {
+            const vote = document.createElement("button")
+
+            vote.innerText = (direction) ? "Up" : "Down"
+
+            vote.addEventListener("click", () => {
+              (direction) ? this.voteCount++ : this.voteCount--;
+              countBox.innerText = `Points: ${this.voteCount}`;
+            })
+
+            return vote
+          }
+
+          buildVoteFunctionality() {
+            const voteBox = document.createElement('div'),
+              countBox = document.createElement('div'),
+              voteUp = this.buildVote(true, countBox),
+              voteDown = this.buildVote(false, countBox)
+
+            countBox.innerText = `Points: ${this.voteCount}`
+
+            voteBox.appendChild(voteUp)
+            voteBox.appendChild(voteDown)
+            voteBox.appendChild(countBox)
+
+            return voteBox
+          }
+
+          buildReplyContainer(container) {
+            const
+              replyContainer = document.createElement('div'),
+              submit = this.buildSubmit(replyContainer, container),
+              cancel = this.buildCancel(replyContainer),
+              box = this.buildReplyBox()
+
+            replyContainer.setAttribute('class', 'reply-container');
+            replyContainer.style.display = 'none';
+
+            replyContainer.appendChild(box);
+            replyContainer.appendChild(submit);
+            replyContainer.appendChild(cancel);
+
+            return replyContainer
+          }
+
+          buildSubmit(replyContainer, container) {
+            const submit = document.createElement('button');
+            submit.innerText = 'Submit';
+            submit.addEventListener('click', (event) => {
+              const textArea = event.target.closest('.comment').querySelector('.reply-container > textarea');
+              if (textArea.value) {
+                // make and render new comment
+                this.children.push(this.post.registerComment(
+                  textArea.value, //content
+                ));
+                this.rerenderChildren(container);
+
+                // hide replyContainer
+                replyContainer.style.display = 'none';
+                textArea.value = '';
+              }
+
+            });
+
+            return submit
+          }
+
+          buildCancel(replyContainer) {
+            const cancel = document.createElement('button');
+            cancel.innerText = 'Cancel';
+            cancel.addEventListener('click', (event) => {
+              const comment = event.target.closest('.comment');
+              comment.querySelector('.reply-container > textarea').value = ''
+              replyContainer.style.display = 'none';
+            });
+
+            return cancel
+          }
+
+          buildReplyBox() {
+            const box = document.createElement('textarea');
+            box.setAttribute('class', 'reply-box');
+
+            return box
+          }
+
+          buildThread(colorDark) {
+            const thread = document.createElement('div');
+            thread.setAttribute('class', 'thread');
+            this.renderChildren().forEach((child) => {
+              thread.appendChild(child);
+            });
+
+            return thread
+          }
+
+          render () {
+            const
+              container = this.buildContainer()
+
+            // return the DOM element
+            return container;
+          }
+
+          /**
+           * Get list of DOM elements for children
+           */
+          renderChildren () {
+            const childrenDOMs = [];
+            this.children.forEach((child) => {
+              childrenDOMs.push(child.render());
+            });
+            return childrenDOMs;
+          }
+
+          rerenderChildren (container) {
+            const thread =
+              document.querySelector('#comment-id-' + this.guid + ' > .thread');
+
+            thread.innerHTML = '';
+            this.renderChildren().forEach((child) => {
+              child.style.backgroundColor = (container.style.backgroundColor === "rgb(255, 255, 255)") ? "rgb(240, 240, 240)" : "rgb(255, 255, 255)"
+              thread.appendChild(child);
+            });
+          }
+        }
+      </script>
+  </head>
+  <body>
+    <div id="post"></div>
+    <script>
+      new Post().render();
+    </script>
+  </body>
+</html>

@@ -1,26 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'
+import './App.scss'
+import LandingPage from './LandingPage'
+import GamePage from './GamePage'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const App = () => {
+	const [page, setPage] = useState("landing")
+
+	const renderPage = (page === "landing")
+		? <LandingPage />
+		: <GamePage />
+
+	return (
+		<div className="App">
+			<div className="selector">
+				<label>
+					<input
+						onChange={() => setPage("landing")}
+						type="radio"
+						name="selector"
+						value="landing"
+						checked={page === "landing"} />
+					<span>Landing</span>
+				</label>
+				<label>
+					<input
+						onChange={() => setPage("game")}
+						type="radio"
+						name="selector"
+						value="game"
+						checked={page === "game"} />
+					<span>Game</span>
+				</label>
+			</div>
+			{renderPage}
+		</div>
+	);
 }
 
-export default App;
+export default App

@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  font-family: "Roboto", "Helvetica Neue", sans-serif;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-spacer {
+  flex: 1;
+}
+
+.Landing-Page {
+  flex-direction: column;
+}
+
+button {
+  border: none;
+  font-size: 16px;
+  border-radius: 3px;
+  padding: 8px 16px;
+  cursor: pointer;
+  background-color: #FFF;
+  transition: all 0.3s ease-in-out;
+  margin: 5px;
+
+  &.sign {
+    border: 1px solid #CCC;
+  }
+
+  &:hover {
+    background-color: #EEE;
+  }
+}
+
+.header {
+  height: 60px;
+  width: 100vw;
+  padding: 0 20px;
+  box-sizing: border-box;
+
+  .title {
+    font-weight: bolder;
+    color: #ef725b;
+    font-size: 25px;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+
+    li {
+      margin: 0;
+      padding: 0;
+      text-decoration: none;
+      display: inline-block;
+
+      button {
+        border: none;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  max-width: 960px;
+  margin: auto;
+
+  .half-page {
+
+    &.text {
+      min-width: 425px;
+    }
+
+    .hero-header {
+      font-size: 50px;
+      font-weight: bolder;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: #999;
+      margin-top: 10px;
+    }
+
+    .cta-buttons {
+      justify-content: center;
+
+      button {
+        margin: 50px 10px;
+        padding: 16px 20px;
+
+        &.main {
+          background-color: #679af8;
+          color: #FFF;
+        }
+      }
+    }
+  }
+}
+
+@import './Game.scss'
